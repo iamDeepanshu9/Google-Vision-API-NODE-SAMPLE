@@ -1,5 +1,7 @@
 require('dotenv').config();
 const vision = require('@google-cloud/vision');
+const base64Images = require('./base64images');
+const { cropMRZFromBase64 } = require('./cropImage');
 
 // Validate environment variables
 function validateEnv() {
@@ -70,9 +72,27 @@ async function main() {
   try {
     // Replace with actual image path when testing
 
+  let value;
+  await cropMRZFromBase64(base64Images.fullPassport)
+    .then((croppedBase64) => {
+      value = croppedBase64;
+      console.log("Cropped MRZ Base64:", croppedBase64);
+    })
+    .catch((err) => console.error("Processing error:", err));
+  
+  
+    const request = {
+    image: {
+      content: value,
+    },
+  };
+
+  console.log('Request:', request);
 
   // '../new-project/Images/mrz.png'
-    const labels = await analyzeImage('../Pan Card.jpg');
+    // const labels = await analyzeImage('../Pan Card.jpg');
+    const labels = await analyzeImage(request);
+
     console.log('Labels:', labels);
   } catch (error) {
     console.error('Application error:', error);
