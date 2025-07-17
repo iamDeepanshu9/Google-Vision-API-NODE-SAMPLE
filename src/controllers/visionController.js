@@ -2,6 +2,7 @@ const vision = require('@google-cloud/vision');
 const fs = require('fs');
 const path = require('path');
 const base64Images = require('../base64images');
+const sharp = require('sharp')
 
 // Initialize Google Vision client
 let visionClient;
@@ -128,12 +129,31 @@ const visionController = {
 
       console.log('Processing uploaded image...');
       
+      // Get additional form data
+      const idType = req.body.idType || 'UNKNOWN';
+      const stepNumber = parseInt(req.body.stepNumber) || 1;
+      
+      console.log(`Processing ${idType} image at step ${stepNumber}`);
+      
       const imageBuffer = req.file.buffer;
+      console.log('Original image buffer size:', imageBuffer.length);
+      
+      const newImage = await sharp(imageBuffer).grayscale()
+        // Enhance contrast for better character recognition
+        .normalize()
+        // Optional: Increase sharpness to make characters more defined
+        .sharpen({ sigma: 1.5 })
+        .toBuffer();
+        
+      const newBase64 = newImage.toString("base64");
+      console.log('Grayscale image buffer size:', newImage.length);
+      console.log('Grayscale base64 length:', newBase64.length);
+      
       const base64Image = imageBuffer.toString('base64');
       
       const request = {
         image: {
-          content: base64Image,
+          content: newBase64,
         },
       };
 
@@ -142,8 +162,11 @@ const visionController = {
       const response = {
         success: true,
         filename: req.file.originalname,
+        idType: idType,
+        stepNumber: stepNumber,
         extractedText: extractedText,
         panDetails: extractedText ? getPanDetails(extractedText) : null,
+        grayscaleBase64: newBase64,
         timestamp: new Date().toISOString()
       };
 
@@ -161,7 +184,7 @@ const visionController = {
   // Analyze base64 image controller
   analyzeBase64Image: async (req, res) => {
     try {
-      const { base64Image } = req.body;
+      const { base64Image, idType, stepNumber } = req.body;
       
       if (!base64Image) {
         return res.status(400).json({
@@ -170,14 +193,30 @@ const visionController = {
         });
       }
 
-      console.log('Processing base64 image...');
+      const processIdType = idType || 'UNKNOWN';
+      const processStepNumber = parseInt(stepNumber) || 1;
+      
+      console.log(`Processing ${processIdType} base64 image at step ${processStepNumber}...`);
       
       // Remove data URL prefix if present
       const cleanBase64 = base64Image.replace(/^data:image\/[a-z]+;base64,/, '');
       
+      // Process image through Sharp for grayscale conversion
+      const imageBuffer = Buffer.from(cleanBase64, 'base64');
+      console.log('Original base64 buffer size:', imageBuffer.length);
+      
+      const newImage = await sharp(imageBuffer).grayscale()
+        .normalize()
+        .sharpen({ sigma: 1.5 })
+        .toBuffer();
+        
+      const newBase64 = newImage.toString("base64");
+      console.log('Grayscale image buffer size:', newImage.length);
+      console.log('Grayscale base64 length:', newBase64.length);
+      
       const request = {
         image: {
-          content: cleanBase64,
+          content: newBase64,
         },
       };
 
@@ -185,8 +224,11 @@ const visionController = {
       
       const response = {
         success: true,
+        idType: processIdType,
+        stepNumber: processStepNumber,
         extractedText: extractedText,
         panDetails: extractedText ? getPanDetails(extractedText) : null,
+        grayscaleBase64: newBase64,
         timestamp: new Date().toISOString()
       };
 
