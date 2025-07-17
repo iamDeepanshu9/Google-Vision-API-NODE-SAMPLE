@@ -50,31 +50,6 @@ async function analyzeImage(imageData) {
   }
 }
 
-// Extract PAN card details from OCR text
-function getPanDetails(ocrText) {
-  if (!ocrText) return null;
-  
-  const panRegex = /([A-Z]{5}[0-9]{4}[A-Z])/;
-  const nameRegex = /नाम\s*\/\s*Name\s*([\w\s]+)/;
-  const fatherNameRegex = /पिता का नाम\s*\/\s*Father's Name\s*([\w\s]+)/;
-  const dobRegex = /जन्म की तारीख\s*\/\s*Date of Birth\s*([\d\/]+)/;
-
-  // Extracting Data using regex match
-  const panNumber = ocrText.match(panRegex);
-  const name = ocrText.match(nameRegex);
-  const fatherName = ocrText.match(fatherNameRegex);
-  const dob = ocrText.match(dobRegex);
-
-  // Creating structured JSON object
-  const panCardData = {
-    "PAN Number": panNumber ? panNumber[1].trim() : null,
-    "Name": name ? name[1].trim() : null,
-    "Father's Name": fatherName ? fatherName[1].trim() : null,
-    "Date of Birth": dob ? dob[1].trim() : null
-  };
-
-  return panCardData;
-}
 
 // Controller functions
 const visionController = {
@@ -327,6 +302,5 @@ module.exports = {
   visionController,
   initializeVisionClient,
   validateEnv,
-  analyzeImage,
-  getPanDetails
+  analyzeImage
 };
