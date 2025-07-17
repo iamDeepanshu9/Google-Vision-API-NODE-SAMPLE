@@ -2,7 +2,8 @@ const vision = require('@google-cloud/vision');
 const fs = require('fs');
 const path = require('path');
 const base64Images = require('../base64images');
-const sharp = require('sharp')
+const sharp = require('sharp');
+const { getPanDetails } = require('../index');
 
 // Initialize Google Vision client
 let visionClient;
