@@ -1,0 +1,7 @@
+Google Vision API client initialized successfully
+🚀 Server running on http://localhost:3000
+📚 API Documentation: http://localhost:3000/api/docs
+🔍 Health Check: http://localhost:3000/health
+🧪 Test Sample: http://localhost:3000/api/test-sample
+Processing uploaded image...
+Processing sample image...
