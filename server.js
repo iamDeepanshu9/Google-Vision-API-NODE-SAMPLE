@@ -30,13 +30,9 @@ app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'Endpoint not found',
-    availableEndpoints: [
-      'GET /health',
-      'GET /api/docs',
-      'GET /api/test-sample',
+    availableEndpoints: [  
       'POST /api/analyze-image',
       'POST /api/analyze-base64',
-      'GET /api/test-local-image'
     ]
   });
 });
@@ -49,9 +45,6 @@ async function startServer() {
     
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
-      console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
-      console.log(`🧪 Test Sample: http://localhost:${PORT}/api/test-sample`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

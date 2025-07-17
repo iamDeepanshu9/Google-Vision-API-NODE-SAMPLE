@@ -1,9 +1,6 @@
 const vision = require('@google-cloud/vision');
 const fs = require('fs');
-const path = require('path');
-const base64Images = require('../base64images');
 const sharp = require('sharp');
-const { getPanDetails } = require('../index');
 
 // Initialize Google Vision client
 let visionClient;
@@ -53,46 +50,6 @@ async function analyzeImage(imageData) {
 
 // Controller functions
 const visionController = {
-  // Health check controller
-  healthCheck: (req, res) => {
-    res.json({ 
-      status: 'OK', 
-      message: 'Google Vision API Server is running',
-      timestamp: new Date().toISOString()
-    });
-  },
-
-  // Test sample image controller
-  testSample: async (req, res) => {
-    try {
-      console.log('Processing sample image...');
-      
-      const request = {
-        image: {
-          content: base64Images.onlymrz,
-        },
-      };
-
-      const extractedText = await analyzeImage(request);
-      
-      const response = {
-        success: true,
-        extractedText: extractedText,
-        panDetails: extractedText ? getPanDetails(extractedText) : null,
-        timestamp: new Date().toISOString()
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error processing sample image:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-  },
-
   // Analyze uploaded image controller
   analyzeUploadedImage: async (req, res) => {
     try {
@@ -141,7 +98,6 @@ const visionController = {
         idType: idType,
         stepNumber: stepNumber,
         extractedText: extractedText,
-        panDetails: extractedText ? getPanDetails(extractedText) : null,
         grayscaleBase64: newBase64,
         timestamp: new Date().toISOString()
       };
@@ -203,7 +159,6 @@ const visionController = {
         idType: processIdType,
         stepNumber: processStepNumber,
         extractedText: extractedText,
-        panDetails: extractedText ? getPanDetails(extractedText) : null,
         grayscaleBase64: newBase64,
         timestamp: new Date().toISOString()
       };
@@ -219,83 +174,6 @@ const visionController = {
     }
   },
 
-  // Test local image controller
-  testLocalImage: async (req, res) => {
-    try {
-      const imagePath = path.join(__dirname, '../../IMG_2572.JPG');
-      
-      if (!fs.existsSync(imagePath)) {
-        return res.status(404).json({
-          success: false,
-          error: 'Local test image not found'
-        });
-      }
-
-      console.log('Processing local image:', imagePath);
-      
-      const extractedText = await analyzeImage(imagePath);
-      
-      const response = {
-        success: true,
-        imagePath: imagePath,
-        extractedText: extractedText,
-        panDetails: extractedText ? getPanDetails(extractedText) : null,
-        timestamp: new Date().toISOString()
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error processing local image:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-  },
-
-  // API documentation controller
-  apiDocs: (req, res) => {
-    const documentation = {
-      title: 'Google Vision API Server',
-      version: '1.0.0',
-      endpoints: [
-        {
-          method: 'GET',
-          path: '/health',
-          description: 'Health check endpoint'
-        },
-        {
-          method: 'GET',
-          path: '/api/test-sample',
-          description: 'Test with sample base64 image'
-        },
-        {
-          method: 'POST',
-          path: '/api/analyze-image',
-          description: 'Upload and analyze image file',
-          parameters: {
-            image: 'File upload (multipart/form-data)'
-          }
-        },
-        {
-          method: 'POST',
-          path: '/api/analyze-base64',
-          description: 'Analyze base64 encoded image',
-          parameters: {
-            base64Image: 'Base64 encoded image string'
-          }
-        },
-        {
-          method: 'GET',
-          path: '/api/test-local-image',
-          description: 'Test with local image file (IMG_2572.JPG)'
-        }
-      ]
-    };
-    
-    res.json(documentation);
-  }
 };
 
 module.exports = {
